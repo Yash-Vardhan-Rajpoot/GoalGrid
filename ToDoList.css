@@ -37,6 +37,8 @@ main{
   border-radius: 20px; 
   overflow-y: scroll;
   overflow-x: scroll;
+  scrollbar-width: auto;
+  scrollbar-color: black lavenderblush;
 }
 #div2{
     height: 80px;
@@ -66,3 +68,4 @@ h4 {
     margin: 4px;  
     padding: 0;    
 }
+
