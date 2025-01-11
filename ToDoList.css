@@ -35,8 +35,8 @@ main{
   flex-direction: column;
   align-items: center;
   border-radius: 20px; 
-  overflow-y:auto ;
-  overflow-x: auto;
+  overflow-y: scroll;
+  overflow-x: scroll;
 }
 #div2{
     height: 80px;
