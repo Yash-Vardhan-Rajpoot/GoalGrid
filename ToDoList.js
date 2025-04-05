@@ -1,35 +1,124 @@
-// to hangle dark and light mode
-const darkmode=document.querySelector('#dark');
-darkmode.addEventListener("click",function(){
-    const currentBgColor = document.body.style.backgroundColor;
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('input');
+    const addBtn = document.getElementById('add');
+    const deleteBtn = document.getElementById('delete');
+    const darkBtn = document.getElementById('dark');
+    const todoContainer = document.getElementById('div1');
+    const totalTasksSpan = document.getElementById('total-tasks');
+    const completedTasksSpan = document.getElementById('completed-tasks');
 
-    if (currentBgColor === "rgb(255, 255, 255)") {
-        document.body.style.backgroundColor = "rgb(62, 62, 66)"; 
-    } else if (currentBgColor === "rgb(62, 62, 66)") { 
-        document.body.style.backgroundColor = "rgb(255, 255, 255)"; 
+    let todos = JSON.parse(localStorage.getItem('todos')) || [];
+    let isDarkMode = localStorage.getItem('darkMode') === 'true';
+
+    // Initialize dark mode
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+        darkBtn.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
     }
-})
-//add task in container
-let count=0;
-const addbutton=document.querySelector("#add");
-addbutton.addEventListener("click",function(){
-    count++;
-    const inputText=document.getElementById("input").value;
-    const container=document.querySelector("#div1");
-    const taskElement=document.createElement("h4");
-    taskElement.textContent=`${count} - ${inputText}`;
-    container.appendChild(taskElement);
-    document.querySelector("#input").value="";
-})
-// deleting the task from comtainer
-const deletebutton=document.querySelector("#delete");
-deletebutton.addEventListener("click",function(){
-    const container=document.querySelector("#div1");
-    if(!container.lastElementChild){
-        alert("sorry there is no task to delete!");
+
+    // Update stats
+    function updateStats() {
+        totalTasksSpan.textContent = todos.length;
+        completedTasksSpan.textContent = todos.filter(todo => todo.completed).length;
     }
-    else {
-        count--;
-        container.lastElementChild.remove();
+
+    // Save todos to localStorage
+    function saveTodos() {
+        localStorage.setItem('todos', JSON.stringify(todos));
+        updateStats();
     }
-})
+
+    // Create todo element
+    function createTodoElement(todo) {
+        const todoItem = document.createElement('div');
+        todoItem.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+        todoItem.innerHTML = `
+            <span>${todo.text}</span>
+            <div class="todo-actions">
+                <button class="complete-btn" onclick="toggleComplete(${todo.id})">
+                    <i class="fas ${todo.completed ? 'fa-check-circle' : 'fa-circle'}"></i>
+                </button>
+                <button class="delete-btn" onclick="deleteTodo(${todo.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        return todoItem;
+    }
+
+    // Render todos
+    function renderTodos() {
+        todoContainer.innerHTML = '';
+        todos.forEach(todo => {
+            todoContainer.appendChild(createTodoElement(todo));
+        });
+        updateStats();
+    }
+
+    // Add todo
+    function addTodo(text) {
+        if (text.trim() === '') return;
+        
+        const todo = {
+            id: Date.now(),
+            text: text,
+            completed: false
+        };
+        
+        todos.push(todo);
+        saveTodos();
+        renderTodos();
+    }
+
+    // Toggle todo completion
+    window.toggleComplete = (id) => {
+        todos = todos.map(todo => {
+            if (todo.id === id) {
+                return { ...todo, completed: !todo.completed };
+            }
+            return todo;
+        });
+        saveTodos();
+        renderTodos();
+    };
+
+    // Delete todo
+    window.deleteTodo = (id) => {
+        todos = todos.filter(todo => todo.id !== id);
+        saveTodos();
+        renderTodos();
+    };
+
+    // Event Listeners
+    addBtn.addEventListener('click', () => {
+        addTodo(input.value);
+        input.value = '';
+    });
+
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addTodo(input.value);
+            input.value = '';
+        }
+    });
+
+    deleteBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear all tasks?')) {
+            todos = [];
+            saveTodos();
+            renderTodos();
+        }
+    });
+
+    darkBtn.addEventListener('click', () => {
+        isDarkMode = !isDarkMode;
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('darkMode', isDarkMode);
+        darkBtn.innerHTML = isDarkMode ? 
+            '<i class="fas fa-sun"></i> Light Mode' : 
+            '<i class="fas fa-moon"></i> Dark Mode';
+    });
+
+    // Initial render
+    renderTodos();
+});
